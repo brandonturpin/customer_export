@@ -17,13 +17,16 @@
         @foreach (var website in Model.Customers)
         {
 
-        <tr>
-            <td class="text-nowrap">@website.DomainName</td>
-            <td class="text-nowrap">@website.CustomerFullName</td>
-            <td class="text-nowrap"><a asp-action="Posts" asp-route-id="@website.WebsiteId">Click Here</a></td>
-            <td class="text-nowrap"><a asp-action="Pages" asp-route-id="@website.WebsiteId">Click Here</a></td>
-            <td class="text-nowrap"><a asp-action="Images" asp-route-id="@website.WebsiteId">Click Here</a></td>
-        </tr>
+            <tr>
+                <td class="text-nowrap">@website.DomainName</td>
+                <td class="text-nowrap">@website.CustomerFullName</td>
+                <td class="text-nowrap"><a asp-action="Posts" asp-route-id="@website.WebsiteId">CSV</a></td>
+                <td class="text-nowrap"><a asp-action="Pages" asp-route-id="@website.WebsiteId">View</a></td>
+                <td class="text-nowrap">
+                    <a asp-action="Images" asp-route-id="@website.WebsiteId">CSV</a> - 
+                    <a asp-action="ZipImages" asp-route-id="@website.WebsiteId">ZIP</a>
+                </td>
+            </tr>
         }
     </tbody>
 </table>

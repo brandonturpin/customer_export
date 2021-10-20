@@ -15,6 +15,9 @@ using BalloonSuite.NetworkCommunication;
 using System.IO;
 using CsvHelper;
 using System.Globalization;
+using System.IO.Compression;
+using System.Net;
+using SixLabors.ImageSharp;
 
 namespace BalloonSuite.CustomerExport.Controllers
 {
@@ -37,6 +40,94 @@ namespace BalloonSuite.CustomerExport.Controllers
       };
 
       return View(model);
+    }
+
+    public IActionResult ZipImages(int id)
+    {
+      WebClient client = new WebClient();
+      byte[] response;
+      var website = this.GetWebsite(id).Value;
+
+      using (var compressedFileStream = new MemoryStream())
+      {
+        using (ZipArchive zipArchive = new ZipArchive(compressedFileStream, ZipArchiveMode.Create, leaveOpen: true))
+        {
+          if(website.Images != default)
+          {
+            foreach (var image in website.Images)
+            {
+              if (image != null && !string.IsNullOrEmpty(image.Url))
+              {
+                Uri uri = new Uri(image.Url);
+                string filename = System.IO.Path.GetFileName(uri.LocalPath);
+
+                // This has correct values.
+                byte[] fileBytes = client.DownloadData(image.Url);
+
+                // Create the instance of the file.
+                var zipEntry = zipArchive.CreateEntry(filename);
+
+                // Get the stream of the file.
+                using (var entryStream = new MemoryStream(fileBytes))
+
+                // Get the Stream of the zipEntry
+                using (var zipEntryStream = zipEntry.Open())
+                {
+                  // Adding the file to the zip file.
+                  entryStream.CopyTo(zipEntryStream);
+                }
+              }
+            }
+          }
+
+          if(website.WebsiteImages != default)
+          {
+            foreach (var image in website.WebsiteImages)
+            {
+              if (image != null && !string.IsNullOrEmpty(image.Url))
+              {
+                Uri uri = new Uri(image.Url);
+                string filename = System.IO.Path.GetFileName(uri.LocalPath);
+
+                // This has correct values.
+                byte[] fileBytes = client.DownloadData(image.Url);
+
+                // Create the instance of the file.
+                var zipEntry = zipArchive.CreateEntry(filename);
+
+                // Get the stream of the file.
+                using (var entryStream = new MemoryStream(fileBytes))
+
+                // Get the Stream of the zipEntry
+                using (var zipEntryStream = zipEntry.Open())
+                {
+                  // Adding the file to the zip file.
+                  entryStream.CopyTo(zipEntryStream);
+                }
+              }
+            }
+          }
+        }
+
+        response = compressedFileStream.ToArray();
+      }
+
+      var domainName = website.DomainName
+       .Replace(" ", "-")
+       .Replace("https://", "")
+       .Replace("http://", "")
+       .Replace("https", "")
+       .Replace("http:", "")
+       .Replace("www.", "")
+       .Replace(".com", "")
+       .Replace(".net", "")
+       .Replace(".us", "")
+       .Replace(".me", "")
+       .Replace("www", "").ToLower();
+
+      var fileName = $"{domainName}-images.zip";
+
+      return File(response, System.Net.Mime.MediaTypeNames.Application.Octet, fileName);
     }
 
     public IActionResult Images(int id)
