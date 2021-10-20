@@ -7,4 +7,3 @@ COPY bin/Debug/netcoreapp3.1/publish BalloonSuite.CustomerExport/
 WORKDIR /src/BalloonSuite.CustomerExport
 
 ENTRYPOINT ["dotnet", "BalloonSuite.CustomerExport.dll"]
-/bin/Debug/netcoreapp3.1/publish
