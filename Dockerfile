@@ -1,6 +1,6 @@
 FROM mcr.microsoft.com/dotnet/sdk:3.1 AS build-env
 WORKDIR /src
-EXPOSE 80
+EXPOSE 5000
 
 COPY bin/Debug/netcoreapp3.1/publish BalloonSuite.CustomerExport/
 
