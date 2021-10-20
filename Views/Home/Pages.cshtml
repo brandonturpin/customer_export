@@ -1,0 +1,36 @@
+﻿@model List<BalloonSuite.Api.Common.Objects.PageBuilderDto>
+@{
+    ViewData["Title"] = "Pages";
+}
+
+<a asp-action="DownloadPages" asp-route-id="@ViewData["websiteId"]" class="btn btn-primary mb-4">Download All Page Data</a>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">Title</th>
+            <th scope="col">Type</th>
+            <th scope="col">Url</th>
+            <th scope="col">Redirect Url</th>
+            <th scope="col">SEO Title</th>
+            <th scope="col">SEO Description</th>
+            <th scope="col">Parent Page</th>
+            <th scope="col">Images</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var page in Model)
+        {
+        <tr>
+            <td class="text-nowrap">@(page.Title)</td>
+            <td class="text-nowrap">@(page.Type)</td>
+            <td class="text-nowrap">@(page.Url)</td>
+            <td class="text-nowrap">@(page.RedirectUrl)</td>
+            <td class="text-nowrap">@(page.SeoTitle)</td>
+            <td class="text-nowrap">@(page.SeoDescription)</td>
+            <td class="text-nowrap">@(page.ParentPage != null ? page.ParentPage.Title : "")</td>
+            <td class="text-nowrap"><a asp-action="DownloadPageImages" asp-route-websiteId="@(ViewData["websiteId"])" asp-route-pageId="@(page.Id)">Download</a></td>
+        </tr>
+        }
+    </tbody>
+</table>

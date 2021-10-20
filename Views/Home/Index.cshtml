@@ -1,0 +1,29 @@
+﻿@model IndexViewModel;
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">Domain Name</th>
+            <th scope="col">Customer Name</th>
+            <th scope="col">Products</th>
+            <th scope="col">Pages</th>
+            <th scope="col">Images</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var website in Model.Customers)
+        {
+
+        <tr>
+            <td class="text-nowrap">@website.DomainName</td>
+            <td class="text-nowrap">@website.CustomerFullName</td>
+            <td class="text-nowrap"><a asp-action="Posts" asp-route-id="@website.WebsiteId">Click Here</a></td>
+            <td class="text-nowrap"><a asp-action="Pages" asp-route-id="@website.WebsiteId">Click Here</a></td>
+            <td class="text-nowrap"><a asp-action="Images" asp-route-id="@website.WebsiteId">Click Here</a></td>
+        </tr>
+        }
+    </tbody>
+</table>

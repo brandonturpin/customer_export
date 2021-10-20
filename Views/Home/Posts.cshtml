@@ -1,0 +1,45 @@
+﻿@model List<BalloonSuite.Api.Common.Objects.PostDto>
+
+@{
+    ViewData["Title"] = "Posts";
+}
+<h1>@ViewData["Title"]</h1>
+
+<p>Use this page to detail your site's privacy policy.</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">Title</th>
+            <th scope="col">Url</th>
+            <th scope="col">Content</th>
+            <th scope="col">Date Modified</th>
+            <th scope="col">Date Published</th>
+            <th scope="col">SEO Description</th>
+            <th scope="col">SEO Title</th>
+            <th scope="col">Thumbnail</th>
+            <th scope="col">Categories</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var post in Model)
+        {
+        <tr>
+            <td>@post.Title.</td>
+            <td class="no-wrap">@post.Url</td>
+            <td class="scrollable"><pre>@post.Content</pre></td>
+            <td>@post.DateModified</td>
+            <td>@post.DatePublished</td>
+            <td>@post.SeoDescription</td>
+            <td>@post.SeoTitle</td>
+            <td><pre class="small">@(post.Thumbnail != null ? post.Thumbnail.Url : "")</pre></td>
+            <td class="no-wrap">
+                @foreach(var category in post.Categories)
+                {
+                  <span>name: @category.Name url: @category.Url </span>
+                }
+            </td>
+        </tr>
+        }
+    </tbody>
+</table>
