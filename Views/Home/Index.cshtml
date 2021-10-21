@@ -17,16 +17,83 @@
         @foreach (var website in Model.Customers)
         {
 
-            <tr>
-                <td class="text-nowrap">@website.DomainName</td>
-                <td class="text-nowrap">@website.CustomerFullName</td>
-                <td class="text-nowrap"><a asp-action="Posts" asp-route-id="@website.WebsiteId">CSV</a></td>
-                <td class="text-nowrap"><a asp-action="Pages" asp-route-id="@website.WebsiteId">View</a></td>
-                <td class="text-nowrap">
-                    <a asp-action="Images" asp-route-id="@website.WebsiteId">CSV</a> - 
-                    <a asp-action="ZipImages" asp-route-id="@website.WebsiteId">ZIP</a>
-                </td>
-            </tr>
+        <tr>
+            <td class="text-nowrap">@website.DomainName</td>
+            <td class="text-nowrap">@website.CustomerFullName</td>
+            <td class="text-nowrap"><a asp-action="Posts" asp-route-id="@website.WebsiteId">CSV</a></td>
+            <td class="text-nowrap"><a asp-action="Pages" asp-route-id="@website.WebsiteId">View</a></td>
+            <td class="text-nowrap"><a asp-action="Images" asp-route-id="@website.WebsiteId">View</a></td>
+        </tr>
         }
     </tbody>
 </table>
+
+@section Scripts {
+<script>
+
+    let data = {};
+
+    let fetch = function (url) {
+        return fetch(url, {
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }).then(response => { })
+    }
+
+    let prepareImages = (websiteId) => {
+        return new Promise(resolve => {
+            this.fetch('')
+                .then((response) => {
+
+                };
+        });
+
+        fetch("api/file/PrepareImagesForDownload/" + clickedBtnID, {
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+            .then(response => {
+                return response.json();
+            })
+            .then(response => {
+                let json = response.json();
+                let finished = false;
+
+                while (!finished) {
+                    let finished = checkZipProgress(response.websiteId);
+                    if (finished) {
+                        finished = true;
+                    }
+                }
+
+                console.log("Finished")
+                return response.json();
+            })
+            .catch(error => {
+                console.error(error);
+                return error.json();
+            });
+    }
+
+    let checkZipProgress = (websiteId) => {
+
+        return fetch("api/file/CheckZipProgress/" + websiteId, {
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+            .then(response => response.json())
+            .catch(error => {
+                console.error(error);
+            });
+    }
+
+    $(".createZipButton").click(function (event) {
+        event.preventDefault();
+        console.log("clicked");
+        var clickedBtnID = $(this).data('websiteid');
+    });
+</script>
+}

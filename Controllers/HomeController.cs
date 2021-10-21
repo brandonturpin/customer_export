@@ -130,63 +130,94 @@ namespace BalloonSuite.CustomerExport.Controllers
       return File(response, System.Net.Mime.MediaTypeNames.Application.Octet, fileName);
     }
 
+
     public IActionResult Images(int id)
     {
-      byte[] response = null;
       var website = this.GetWebsite(id).Value;
-      var csv = new List<ImageExportCSV>();
+      var model = new ImagesViewModel();
+      model.WebsiteId = id;
+      model.TotalImages = website.Images?.Count ?? 0 + website.WebsiteImages?.Count ?? 0;
+      return View(model);
+    }
 
-      if (website == default)
+    public IActionResult DownloadImages(int websiteId, int chunkIndex)
+    {
+      byte[] response = null;
+      WebClient client = new WebClient();
+      var website = this.GetWebsite(websiteId).Value;
+      var images = new List<ImageCollection>();
+      var chunks = new List<List<ImageCollection>>();
+
+      if(website.Images != default)
       {
-        return Content($"Website {id} did not return any data");
+        website.Images.ForEach(x => images.Add(new ImageCollection { Image = x, Type = ImageCollectionType.image }));
       }
 
-      if (website.Images != null)
+      if(website.WebsiteImages != default)
       {
-        foreach (var image in website.Images)
+        website.WebsiteImages.ForEach(x => images.Add(new ImageCollection { WebsiteImage = x, Type = ImageCollectionType.websiteImage }));
+      }
+
+      chunks = images
+        .Select((x, i) => new { Index = i, Value = x })
+        .GroupBy(x => x.Index / 50)
+        .Select(x => x.Select(v => v.Value).ToList())
+        .ToList();
+
+      var imagesToZip = chunks.ElementAtOrDefault(chunkIndex);
+
+      using (var compressedFileStream = new MemoryStream())
+      {
+        using (ZipArchive zipArchive = new ZipArchive(compressedFileStream, ZipArchiveMode.Create, leaveOpen: true))
         {
-          csv.Add(new ImageExportCSV
+          foreach (var image in imagesToZip)
           {
-            Name = image.Name,
-            Url = image.Url
-          });
+            if (!(image.Image != null && image.WebsiteImage != null)
+              && !string.IsNullOrEmpty(image.Type == ImageCollectionType.image ? image.Image.Url : image.WebsiteImage.Url))
+            {
+              var imageUrl = image.Type == ImageCollectionType.image ? image.Image.Url : image.WebsiteImage.Url;
+              Uri uri = new Uri(imageUrl);
+              string filename = System.IO.Path.GetFileName(uri.LocalPath);
+
+              // This has correct values.
+              byte[] fileBytes = client.DownloadData(imageUrl);
+
+              // Create the instance of the file.
+              var zipEntry = zipArchive.CreateEntry(filename);
+
+              // Get the stream of the file.
+              using (var entryStream = new MemoryStream(fileBytes))
+
+              // Get the Stream of the zipEntry
+              using (var zipEntryStream = zipEntry.Open())
+              {
+                // Adding the file to the zip file.
+                entryStream.CopyTo(zipEntryStream);
+              }
+            }
+          }
         }
-      }
 
-      if (website.WebsiteImages != null)
-      {
-        foreach (var image in website.WebsiteImages)
-        {
-          csv.Add(new ImageExportCSV
-          {
-            Name = image.FileName,
-            Url = image.Url
-          });
-        }
-      }
-
-      using (var memoryStream = new MemoryStream())
-      using (var streamWriter = new StreamWriter(memoryStream))
-      using (var csvWriter = new CsvWriter(streamWriter, CultureInfo.InvariantCulture))
-      {
-        csvWriter.WriteRecords(csv);
-        streamWriter.Flush();
-
-        response = memoryStream.ToArray();
+        response = compressedFileStream.ToArray();
       }
 
       var domainName = website.DomainName
-        .Replace(" ", "-")
-        .Replace("https://", "")
-        .Replace("http://", "")
-        .Replace("https", "")
-        .Replace("http:", "")
-        .Replace("www.", "")
-        .Replace("www", "").ToLower();
+       .Replace(" ", "-")
+       .Replace("https://", "")
+       .Replace("http://", "")
+       .Replace("https", "")
+       .Replace("http:", "")
+       .Replace("www.", "")
+       .Replace(".com", "")
+       .Replace(".net", "")
+       .Replace(".us", "")
+       .Replace(".me", "")
+       .Replace("www", "").ToLower();
 
-      var fileName = $"{domainName}_Image_Export.csv";
+      var fileName = $"{domainName}-images_{chunkIndex}.zip";
 
-      return File(response, "text/csv", fileName);
+      return File(response, System.Net.Mime.MediaTypeNames.Application.Octet, fileName);
+
     }
 
     public IActionResult DownloadPageImages(int websiteId, int pageId)
